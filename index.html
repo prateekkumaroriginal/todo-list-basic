@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+</head>
+
+<body>
+    Todo Title
+    <input type="text" name="" id="title"><br><br>
+    Todo Description
+    <input type="text" name="" id="desc"><br><br>
+    <button onclick="onPress()">Add</button>
+
+    <div id="wrapper">
+
+    </div>
+</body>
+
+<script>
+    const URL = 'http://127.0.0.1:3000/todos';
+
+    function createTodo(id, title, desc) {
+        let childElement = document.createElement('div')
+        childElement.setAttribute('id', `todo-${id}`)
+
+        let grandChild1 = document.createElement('span')
+        grandChild1.innerHTML = title
+        let grandChild2 = document.createElement('span')
+        grandChild2.innerHTML = desc
+        let grandChild3 = document.createElement('button')
+        grandChild3.innerHTML = 'Delete'
+        grandChild3.setAttribute("onclick", `onDelete(${id})`)
+
+        childElement.appendChild(grandChild1)
+        childElement.appendChild(grandChild2)
+        childElement.appendChild(grandChild3)
+
+        wrapper.appendChild(childElement)
+    }
+
+    function onDelete(id) {
+        fetch(URL + '/' + id, {
+            method: 'DELETE',
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(resp => {
+            resp.json().then(data => {
+                const wrapper = document.getElementById('wrapper');
+                const childToRemove = document.getElementById(`todo-${data.id}`);
+                wrapper.removeChild(childToRemove);
+            });
+        });
+    }
+
+    function getData() {
+        fetch(URL, {
+            method: 'GET'
+        }).then(resp => {
+            resp.json().then(data => {
+                const wrapper = document.getElementById('wrapper');
+
+                for (let i = 0; i < data.length; i++) {
+                    createTodo(data[i].id, data[i].title, data[i].description);
+                }
+            });
+        });
+    }
+
+    getData();
+
+    function onPress() {
+        let title = document.getElementById('title').value
+        let desc = document.getElementById('desc').value
+        fetch(URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                title: title,
+                description: desc,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then((resp) => {
+            resp.json().then(data => {
+                createTodo(data.id, data.title, data.description);
+            });
+        });
+    }
+</script>
+
+</html>
